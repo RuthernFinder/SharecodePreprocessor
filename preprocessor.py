@@ -7,21 +7,18 @@ def analyze_missing_data(file_path: str, export_csv: bool = True):
     """
     Hàm đọc dữ liệu GPU, tính toán độ khuyết dữ liệu trên từng tiêu chí,
     sắp xếp thứ hạng và trực quan hóa kết quả.
-
-    Parameters:
-        file_path (str): Đường dẫn tới tập tin CSV (ví dụ: 'All_GPUs (2).csv')
-        export_csv (bool): Lưu báo cáo xếp hạng ra file CSV nếu là True.
+        file_path(str): Đường dẫn tới tập tin CSV.
+        export_csv(bool): Lưu báo cáo xếp hạng ra file CSV nếu là True.
     """
-    print(f"=== Đang đọc tập tin: {file_path} ===")
+    print(f"Đang đọc tập tin: {file_path}")
     df = pd.read_csv(file_path)
-
     total_samples = len(df)
     total_features = len(df.columns)
     print(f"Tổng số mẫu (Rows): {total_samples}")
     print(f"Tổng số tiêu chí (Columns): {total_features}\n")
 
     # 1. Tính số lượng và tỷ lệ khuyết cho từng cột
-    missing_count = df.isnull().sum()
+    missing_count = df.isnull().sum() #Hàm cho biết đâu là phần tử null và tổng tất cả
     missing_percent = (missing_count / total_samples) * 100
 
     # 2. Tạo DataFrame tổng hợp
@@ -54,9 +51,8 @@ def analyze_missing_data(file_path: str, export_csv: bool = True):
             return "Nghiêm trọng (>50%)"
 
     missing_summary['Severity_Level'] = missing_summary['Missing_Percentage'].apply(classify_severity)
-
-    # Print bảng xếp hạng ra console
-    print("=== BẢNG XẾP HẠNG ĐỘ KHUYẾT DỮ LIỆU ===")
+    # Print bảng xếp hạng
+    print("BẢNG XẾP HẠNG ĐỘ KHUYẾT DỮ LIỆU")
     print(missing_summary.to_string())
 
     # Xuất báo cáo CSV nếu được yêu cầu
@@ -70,7 +66,7 @@ def analyze_missing_data(file_path: str, export_csv: bool = True):
 
     return missing_summary
 
-def plot_missing_data(missing_summary: pd.DataFrame, df: pd.DataFrame):
+def plot_missing_data(missing_summary: pd.DataFrame, df: pd.DataFrame):# hàm vẽ biểu đồ
     """
     Hàm vẽ biểu đồ cột tỷ lệ khuyết dữ liệu và biểu đồ Heatmap tương quan khuyết.
     """
@@ -106,7 +102,7 @@ def plot_missing_data(missing_summary: pd.DataFrame, df: pd.DataFrame):
             )
 
     plt.tight_layout()
-    plt.savefig('missing_data_barplot.png', dpi=300)
+    # plt.savefig('missing_data_barplot.png', dpi=300)
     plt.show()
 
     # --- Biểu đồ 2: Heatmap tương quan khuyết dữ liệu giữa các thuộc tính quan trọng ---
@@ -130,10 +126,10 @@ def plot_missing_data(missing_summary: pd.DataFrame, df: pd.DataFrame):
         )
         plt.title('Ma trận tương quan khuyết dữ liệu (Missingness Correlation)', fontsize=14, fontweight='bold')
         plt.tight_layout()
-        plt.savefig('missing_data_correlation.png', dpi=300)
+        # plt.savefig('missing_data_correlation.png', dpi=300)
         plt.show()
 
 # --- Thực thi chương trình ---
 if __name__ == "__main__":
     file_path = "All_GPUs.csv"
-    missing_report = analyze_missing_data(file_path)
+    missing_report = analyze_missing_data(file_path,False)
