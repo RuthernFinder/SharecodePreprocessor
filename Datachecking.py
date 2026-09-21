@@ -3,12 +3,10 @@ import sys
 
 def check_csv_dtypes(file_path: str):
     try:
-        # Đọc dữ liệu
         df = pd.read_csv(file_path)
     except Exception as e:
         print(f"[X] Lỗi không đọc được file: {e}")
         return
-
     total_rows, total_cols = df.shape
 
     print("=" * 80)
@@ -16,7 +14,6 @@ def check_csv_dtypes(file_path: str):
     print(f" KÍCH THƯỚC: {total_rows:,} dòng x {total_cols} cột (Full thuộc tính)")
     print("=" * 80)
 
-    # Tự động lấy tất cả các cột mà không cần hardcode tên cột
     summary_list = []
     for col in df.columns:
         non_null = df[col].count()
