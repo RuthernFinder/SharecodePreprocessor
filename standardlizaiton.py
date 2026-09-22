@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 
 # 1. Đọc file CSV chứa đúng 10 thuộc tính
-file_path = "GPU_10_Features.csv"  # Hoặc tên file 10 dữ liệu của bạn
+file_path = "GPU_10_Features.csv"
 df = pd.read_csv(file_path)
 
 print(f"=== KÍCH THƯỚC BAN ĐẦU: {df.shape[0]} dòng, {df.shape[1]} cột ===")
 
-# 2. XÓA HOÀN TOÀN CÁC DÒNG CÓ DỮ LIỆU KHUYẾT (TUYỆT ĐỐI KHÔNG NỘI SUY)
+# xóa các dòng khuyết dữ liệu
 df_clean = df.dropna().copy()
 
 print(f"=== KÍCH THƯỚC SAU KHI VỨT BỎ DỮ LIỆU KHUYẾT: {df_clean.shape[0]} dòng ===")

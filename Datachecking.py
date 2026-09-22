@@ -34,7 +34,7 @@ def check_csv_dtypes(file_path: str):
     # Tạo DataFrame tổng hợp để in đẹp trên Terminal
     report_df = pd.DataFrame(summary_list)
 
-    # Cấu hình Pandas hiển thị full cột, full dòng trên Terminal không bị cắt dòng (...)
+    # Cấu hình Pandas hiển thị full cột, full dòng trên Terminal không bị cắt dòng
     pd.set_option('display.max_columns', None)
     pd.set_option('display.max_rows', None)
     pd.set_option('display.width', 1000)
@@ -44,7 +44,6 @@ def check_csv_dtypes(file_path: str):
     print("=" * 80)
 
 if __name__ == "__main__":
-    # Thay tên file bất kỳ bạn muốn kiểm tra ở đây:
     target_file = "GPU_10_Features.csv"
 
     check_csv_dtypes(target_file)

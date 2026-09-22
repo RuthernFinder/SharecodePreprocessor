@@ -17,11 +17,12 @@ def analyze_missing_data(file_path: str, export_csv: bool = True):
     print(f"Tổng số mẫu (Rows): {total_samples}")
     print(f"Tổng số tiêu chí (Columns): {total_features}\n")
 
-    # 1. Tính số lượng và tỷ lệ khuyết cho từng cột
+    # Số dữ liệu khuyết từng thuộc tính
     missing_count = df.isnull().sum() #Hàm cho biết đâu là phần tử null và tổng tất cả
+    # Tỷ lệ khuyết dữ liệu
     missing_percent = (missing_count / total_samples) * 100
 
-    # 2. Tạo DataFrame tổng hợp
+    # Tạo DataFrame
     missing_summary = pd.DataFrame({
         'Criteria': df.columns,
         'Missing_Count': missing_count,
@@ -37,7 +38,7 @@ def analyze_missing_data(file_path: str, export_csv: bool = True):
     missing_summary.index = missing_summary.index + 1
     missing_summary.index.name = 'Rank'
 
-    # Phân loại mức độ khuyết dữ liệu
+    #kiểm tra độ khuyết dữ liệu từng thuộc tính
     def classify_severity(pct):
         if pct == 0:
             return "Đầy đủ (0%)"
@@ -51,7 +52,7 @@ def analyze_missing_data(file_path: str, export_csv: bool = True):
             return "Nghiêm trọng (>50%)"
 
     missing_summary['Severity_Level'] = missing_summary['Missing_Percentage'].apply(classify_severity)
-    # Print bảng xếp hạng
+    # in ra bảng xếp hạng
     print("BẢNG XẾP HẠNG ĐỘ KHUYẾT DỮ LIỆU")
     print(missing_summary.to_string())
 
@@ -103,7 +104,6 @@ def plot_missing_data(missing_summary: pd.DataFrame, df: pd.DataFrame):# hàm v�
 
     plt.tight_layout()
     # plt.savefig('missing_data_barplot.png', dpi=300)
-    plt.show()
 
     # --- Biểu đồ 2: Heatmap tương quan khuyết dữ liệu giữa các thuộc tính quan trọng ---
     # Kiểm tra sự xuất hiện đồng thời của các giá trị Null giữa các thuộc tính
@@ -129,7 +129,6 @@ def plot_missing_data(missing_summary: pd.DataFrame, df: pd.DataFrame):# hàm v�
         # plt.savefig('missing_data_correlation.png', dpi=300)
         plt.show()
 
-# --- Thực thi chương trình ---
 if __name__ == "__main__":
     file_path = "All_GPUs.csv"
     missing_report = analyze_missing_data(file_path,False)
