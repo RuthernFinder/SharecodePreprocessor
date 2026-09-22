@@ -76,7 +76,7 @@ def run_full_data_audit(file_path: str):
     df = pd.read_csv(file_path)
     print(f"Kích thước tập dữ liệu: {df.shape[0]} dòng, {df.shape[1]} cột\n")
 
-    # 1. Kiểm tra trùng lặp
+    # Kiểm tra trùng lặp
     dup_res = check_duplicates(df)
     print("1. KẾT QUẢ KIỂM TRA TRÙNG LẶP:")
     print(f"   - Số dòng trùng lặp hoàn toàn: {dup_res['exact_duplicates_count']}")
@@ -86,7 +86,7 @@ def run_full_data_audit(file_path: str):
         print(dup_res['duplicate_names_detail'].to_string(index=False))
     print("-" * 60)
 
-    # 2. Kiểm tra Logic
+    # Kiểm tra Logic
     logic_res = check_logic(df)
     print("2. KẾT QUẢ KIỂM TRA LOGIC & ĐIỀU KIỆN RÀNG RỒNG:")
     print(f"   - Lỗi logic Độ phân giải (Res_Width <= Res_Height hoặc <= 0): {logic_res['invalid_resolution_count']} trường hợp")
