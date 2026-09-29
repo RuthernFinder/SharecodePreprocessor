@@ -25,19 +25,18 @@ def check_duplicates(df: pd.DataFrame) -> Dict[str, Any]:
 
 def check_logic(df: pd.DataFrame) -> Dict[str, Any]:
     """
-    2. KIỂM TRA LOGIC VÀ QUY TẮC MIỀN DỮ LIỆU (LOGIC & DOMAIN VALIDATION)
-    Thực hiện kiểm tra các điều kiện ràng buộc kỹ thuật của GPU (Đã bỏ kiểm tra Ngày-Năm):
-
-    - Logic Độ phân giải hiển thị (Resolution Logic):
-      Res_Width phải lớn hơn Res_Height (chuẩn màn hình ngang) và cả hai phải > 0.
-    - Logic Thông số vật lý / Phần cứng (Physical Hardware Logic):
+    2. KIỂM TRA LOGIC VÀ QUY TẮC MIỀN DỮ LIỆU
+    Thực hiện kiểm tra các điều kiện ràng buộc kỹ thuật của GPU:
+    - Logic Độ phân giải hiển thị(resolution):
+      Res_Width phải lớn hơn Res_Height và cả hai phải > 0.
+    - Logic Thông số vật lý / Phần cứng:
       Các chỉ số điện năng, bộ nhớ, bus width, bandwidth, clock speed phải > 0.
-    - Logic Danh mục hợp lệ (Categorical Integrity):
+    - Logic Danh mục hợp lệ:
       Manufacturer phải thuộc các hãng hợp lệ và SLI_Crossfire chỉ nhận 'Yes'/'No'.
     """
     logic_results = {}
 
-    # --- Logic Độ phân giải (Res_Width > Res_Height & Res > 0) ---
+    #Logic Độ phân giải
     invalid_res = df[
         (df['Res_Width'] <= df['Res_Height']) |
         (df['Res_Width'] <= 0) |
@@ -46,7 +45,7 @@ def check_logic(df: pd.DataFrame) -> Dict[str, Any]:
     logic_results["invalid_resolution_count"] = len(invalid_res)
     logic_results["invalid_resolution_detail"] = invalid_res[['Name', 'Res_Width', 'Res_Height']]
 
-    # --- Logic Thông số vật lý (Giá trị số phải > 0) ---
+    # Thông số vật lý
     hw_columns = [
         'Max_Power_Watts', 'Memory_MB', 'Memory_Bus_Bit',
         'Memory_Bandwidth_GBs', 'Memory_Speed_MHz'
@@ -55,7 +54,7 @@ def check_logic(df: pd.DataFrame) -> Dict[str, Any]:
     logic_results["invalid_hardware_values_count"] = len(invalid_hw)
     logic_results["invalid_hardware_detail"] = invalid_hw[['Name'] + hw_columns]
 
-    # --- Logic Giá trị danh mục hợp lệ ---
+    # Logic Giá trị danh mục hợp lệ
     valid_manufacturers = {'Nvidia', 'AMD', 'Intel', 'ATI'}
     valid_sli_values = {'Yes', 'No'}
 
@@ -88,9 +87,9 @@ def run_full_data_audit(file_path: str):
 
     # Kiểm tra Logic
     logic_res = check_logic(df)
-    print("2. KẾT QUẢ KIỂM TRA LOGIC & ĐIỀU KIỆN RÀNG RỒNG:")
-    print(f"   - Lỗi logic Độ phân giải (Res_Width <= Res_Height hoặc <= 0): {logic_res['invalid_resolution_count']} trường hợp")
-    print(f"   - Giá trị phần cứng vô lý (<= 0): {logic_res['invalid_hardware_values_count']} trường hợp")
+    print("2. KẾT QUẢ KIỂM TRA LOGIC và ĐIỀU KIỆN")
+    print(f"   - Lỗi logic Độ phân giải : {logic_res['invalid_resolution_count']} trường hợp")
+    print(f"   - Giá trị phần cứng (<= 0): {logic_res['invalid_hardware_values_count']} trường hợp")
     print(f"   - Nhà sản xuất không hợp lệ: {logic_res['invalid_manufacturer_count']} trường hợp")
     print(f"   - Giá trị SLI/Crossfire không hợp lệ: {logic_res['invalid_sli_count']} trường hợp")
     print("-" * 60)

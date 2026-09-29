@@ -64,8 +64,6 @@ df_final = df_clean[final_normalized_cols].rename(columns={'Release_Date_Clean':
 output_file = "GPU_10_Features_Normalized.csv"
 df_final.to_csv(output_file, index=False, encoding='utf-8-sig')
 
-print(f"\n[X] Đã chuẩn hóa xong! File lưu tại: {output_file}")
-print("\n=== BẢNG TỔNG HỢP KIỂU DỮ LIỆU SAU CHUẨN HÓA ===")
 print(df_final.dtypes)
 
 print("\n=== 5 DÒNG ĐẦU DỮ LIỆU CHUẨN HÓA ===")

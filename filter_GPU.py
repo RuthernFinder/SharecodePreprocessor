@@ -24,6 +24,3 @@ df_selected = df[selected_columns]
 # 4. Xuất dữ liệu ra file CSV mới (không lưu chỉ số dòng index)
 output_file = "GPU_10_Features.csv"
 df_selected.to_csv(output_file, index=False, encoding='utf-8-sig')
-
-print(f"Đã trích xuất thành công {df_selected.shape[1]} cột và {df_selected.shape[0]} dòng.")
-print(f"File mới đã được lưu tại: {output_file}")
