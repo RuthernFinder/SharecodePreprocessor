@@ -1,10 +1,10 @@
-# SharecodePreprocessor
-
-# Lưu ý thứ tự chạy file PYTHON:
-0. preprocessor
-1. fitercpu.py(1file mới)
-2. datachecking
-3. standarlization(1file mới)
-5. check lại file mới nếu cần
-6. finalprocssing.py(1file mới)
->Output cuối cùng là csv có thể đem đi múa được rồi
+# Xin chào thế giới
+# Helloworld
+# Bonjour le monde
+# Hola mundo
+# Hallo Welt
+# こんにちは世界
+# Привет, мир
+# 你好，世界
+# Olá mundo
+# 안녕하세요 세계
