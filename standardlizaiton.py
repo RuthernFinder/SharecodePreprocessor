@@ -1,70 +1,69 @@
 import pandas as pd
 import numpy as np
-
-# 1. Đọc file CSV chứa đúng 10 thuộc tính
+# 1. ĐỌC DỮ LIỆU
 file_path = "GPU_10_Features.csv"
-df = pd.read_csv(file_path)
+df = pd.read_csv(file_path, encoding="utf-8-sig")
+# print(f"=== KÍCH THƯỚC BAN ĐẦU: {df.shape[0]} dòng, {df.shape[1]} cột ===")
+# 2. CHUẨN HÓA CHUỖI VĂN BẢN
+text_cols = ["Name", "Manufacturer", "Notebook_GPU", "Memory_Type", "Release_Date"]
+for col in text_cols:
+    df[col] = (
+        df[col]
+        .astype("string")
+        .str.replace(r"\s+", " ", regex=True)
+        .str.strip()
+    )
+df["Manufacturer"] = df["Manufacturer"].str.title().replace({"Nvidia": "NVIDIA", "Amd": "AMD", "Ati": "ATI"})
+df["Memory_Type"] = df["Memory_Type"].str.upper().replace({"EDRAM": "eDRAM"})
 
-print(f"=== KÍCH THƯỚC BAN ĐẦU: {df.shape[0]} dòng, {df.shape[1]} cột ===")
+# Mã hóa Notebook_GPU: Yes -> 1, No -> 0, Khuyết -> NaN (Kiểu Int64 hỗ trợ NaN)
+df["Is_Notebook"] = df["Notebook_GPU"].str.lower().map({"yes": 1, "no": 0}).astype("Int64")
 
-# xóa các dòng khuyết dữ liệu
-df_clean = df.dropna().copy()
 
-print(f"=== KÍCH THƯỚC SAU KHI VỨT BỎ DỮ LIỆU KHUYẾT: {df_clean.shape[0]} dòng ===")
+# 3. TRÍCH XUẤT DỮ LIỆU SỐ (Dữ liệu khuyết tự động thành NaN)
 
-# 3. CHUẨN HÓA DỮ LIỆU CHUỖI VĂN BẢN (STRING CLEANING)
-# Xóa khoảng trắng thừa và ký tự xuống dòng (\n) ở Release_Date và Name
-df_clean['Name'] = df_clean['Name'].astype(str).str.strip()
-df_clean['Manufacturer'] = df_clean['Manufacturer'].astype(str).str.strip()
-df_clean['SLI_Crossfire'] = df_clean['SLI_Crossfire'].astype(str).str.strip()
-df_clean['Release_Date_Clean'] = df_clean['Release_Date'].astype(str).str.strip()
+def extract_number(series):
+    """Trích xuất số float. Không tìm thấy số -> trả về NaN"""
+    return pd.to_numeric(
+        series.astype("string").str.replace(",", "", regex=False).str.extract(r"(\d+\.?\d*)")[0],
+        errors="coerce",
+    )
+df["Max_Power_Watts"]  = extract_number(df["Max_Power"])
+df["Memory_MB"]        = extract_number(df["Memory"])
+df["Memory_Bus_Bit"]   = extract_number(df["Memory_Bus"])
+df["Memory_Speed_MHz"] = extract_number(df["Memory_Speed"])
+# Xử lý Memory_Bandwidth (Quy về GB/sec, giữ NaN nếu thiếu)
+bw_extracted = extract_number(df["Memory_Bandwidth"])
+is_mb = df["Memory_Bandwidth"].astype("string").str.contains("MB/sec", case=False, na=False)
+df["Memory_Bandwidth_GBs"] = np.where(is_mb, bw_extracted / 1000.0, bw_extracted)
 
-# 4. TRÍCH XUẤT VÀ CHUẨN HÓA KIỂU SỐ (NUMERIC EXTRACT)
-# Max_Power ('141 Watts' -> 141.0)
-df_clean['Max_Power_Watts'] = df_clean['Max_Power'].astype(str).str.extract(r'([\d\.]+)').astype(float)
+# Quy đổi Memory sang GB (NaN / 1024 vẫn ra NaN)
+df["Memory_GB"] = df["Memory_MB"] / 1024.0
 
-# Memory ('1024 MB ' -> 1024.0)
-df_clean['Memory_MB'] = df_clean['Memory'].astype(str).str.extract(r'([\d\.]+)').astype(float)
+# =====================================================================
+# 4. CHUẨN HÓA NÀY GIỜ (Khuyết -> NaT / NaN)
+# =====================================================================
+date_parsed = pd.to_datetime(df["Release_Date"], format="%d-%b-%Y", errors="coerce")
 
-# Memory_Bus ('256 Bit ' -> 256.0)
-df_clean['Memory_Bus_Bit'] = df_clean['Memory_Bus'].astype(str).str.extract(r'([\d\.]+)').astype(float)
+df["Release_Year"]  = date_parsed.dt.year.astype("Int64")   # Giữ NaN chuẩn dạng số nguyên
+df["Release_Month"] = date_parsed.dt.month.astype("Int64")  # Giữ NaN chuẩn dạng số nguyên
+df["Release_Date_Parsed"] = date_parsed.dt.strftime("%Y-%m-%d")
+# 5. LỌC TRÙNG & XUẤT FILE SẠCH CÓ NATIVE NaN
+df = df.drop_duplicates(subset=["Name", "Release_Date"]).copy()
 
-# Memory_Bandwidth ('64GB/sec' -> 64.0)
-df_clean['Memory_Bandwidth_GBs'] = df_clean['Memory_Bandwidth'].astype(str).str.extract(r'([\d\.]+)').astype(float)
-
-# Memory_Speed ('1000 MHz' -> 1000.0)
-df_clean['Memory_Speed_MHz'] = df_clean['Memory_Speed'].astype(str).str.extract(r'([\d\.]+)').astype(float)
-
-# Resolution_WxH ('2560x1600' -> Res_Width: 2560.0, Res_Height: 1600.0)
-df_clean[['Res_Width', 'Res_Height']] = df_clean['Resolution_WxH'].astype(str).str.extract(r'(\d+)x(\d+)').astype(float)
-
-# 5. CHUẨN HÓA KIỂU THỜI GIAN (DATETIME)
-df_clean['Release_Date_Parsed'] = pd.to_datetime(df_clean['Release_Date_Clean'], errors='coerce')
-df_clean['Release_Year'] = df_clean['Release_Date_Parsed'].dt.year
-
-# 6. LỌC LẠI CÁC CỘT ĐÃ ĐƯỢC CHUẨN HÓA HOÀN CHỈNH
-final_normalized_cols = [
-    'Manufacturer',
-    'Name',
-    'SLI_Crossfire',
-    'Release_Date_Clean',
-    'Release_Year',
-    'Max_Power_Watts',
-    'Memory_MB',
-    'Memory_Bus_Bit',
-    'Memory_Bandwidth_GBs',
-    'Memory_Speed_MHz',
-    'Res_Width',
-    'Res_Height'
+final_cols = [
+    "Name", "Manufacturer", "Is_Notebook", "Memory_Type",
+    "Release_Date_Parsed", "Release_Year", "Release_Month",
+    "Max_Power_Watts", "Memory_MB", "Memory_GB",
+    "Memory_Bus_Bit", "Memory_Bandwidth_GBs", "Memory_Speed_MHz"
 ]
 
-df_final = df_clean[final_normalized_cols].rename(columns={'Release_Date_Clean': 'Release_Date'})
+df_final = df[final_cols].rename(columns={"Release_Date_Parsed": "Release_Date"})
 
-# 7. XUẤT RA FILE CSV MỚI HOÀN TOÀN CHUẨN HÓA
-output_file = "GPU_10_Features_Normalized.csv"
-df_final.to_csv(output_file, index=False, encoding='utf-8-sig')
+# Xuất file CSV (Pandas sẽ ghi các ô NaN thành ô trống rỗng)
+output_file = "GPU_10_Features_Clean_NaN.csv"
+df_final.to_csv(output_file, index=False, encoding="utf-8-sig")
 
-print(df_final.dtypes)
-
-print("\n=== 5 DÒNG ĐẦU DỮ LIỆU CHUẨN HÓA ===")
-print(df_final.head())
+# print(f"\n=== ĐÃ LƯU FILE THÀNH CÔNG: {output_file} ===")
+# print("=== THỐNG KÊ MÔ TẢ TRỰC TIẾP (PANDAS TỰ ĐỘNG BỎ QUA NaN) ===")
+# print(df_final[["Max_Power_Watts", "Memory_MB", "Memory_Bandwidth_GBs"]].describe().round(2))

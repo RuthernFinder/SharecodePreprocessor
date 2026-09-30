@@ -6,16 +6,16 @@ df = pd.read_csv(input_file)
 
 # 2. Danh sách 10 thuộc tính cần giữ lại
 selected_columns = [
+    'Name',
     'Manufacturer',
     'Max_Power',
     'Memory',
     'Memory_Bus',
     'Memory_Bandwidth',
     'Memory_Speed',
-    'Name',
     'Release_Date',
-    'Resolution_WxH',
-    'SLI_Crossfire'
+    'Notebook_GPU',
+    'Memory_Type'
 ]
 
 # 3. Lọc dữ liệu chỉ lấy 10 cột đã chọn
