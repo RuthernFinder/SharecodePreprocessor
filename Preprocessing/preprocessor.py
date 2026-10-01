@@ -6,9 +6,6 @@ import seaborn as sns
 def generate_missing_data_plots(file_path: str, show_plot: bool = True, save_plot: bool = True):
     """
     Đọc dữ liệu GPU và trực quan hóa độ khuyết dữ liệu bằng biểu đồ.
-    Hoàn toàn không in bất kỳ thông tin nào ra Terminal.
-
-    Parameters:
         file_path (str): Đường dẫn tới tập tin CSV (ví dụ: 'All_GPUs.csv')
         show_plot (bool): Hiển thị biểu đồ ra màn hình nếu là True.
         save_plot (bool): Lưu biểu đồ thành file hình ảnh nếu là True.
@@ -29,7 +26,7 @@ def generate_missing_data_plots(file_path: str, show_plot: bool = True, save_plo
     # Cấu hình giao diện Seaborn
     sns.set_theme(style="whitegrid")
 
-    # --- Biểu đồ 1: Biểu đồ cột tỷ lệ khuyết dữ liệu theo tiêu chí ---
+    # Biểu đồ 1: Biểu đồ cột tỷ lệ khuyết dữ liệu theo tiêu chí
     missing_only = missing_summary[missing_summary['Missing_Count'] > 0]
 
     if not missing_only.empty:
@@ -42,9 +39,9 @@ def generate_missing_data_plots(file_path: str, show_plot: bool = True, save_plo
             palette='magma'
         )
 
-        plt.title('Tỷ lệ % khuyết dữ liệu của từng tiêu chí GPU', fontsize=16, fontweight='bold', pad=15)
+        plt.title('Tỷ lệ % khuyết dữ liệu của từng tiêu chí GPU (chỉ thể hiện những dữ liệu khuyết)', fontsize=16, fontweight='bold', pad=15)
         plt.xlabel('Tỷ lệ khuyết (%)', fontsize=12)
-        plt.ylabel('Tiêu chí (Criteria)', fontsize=12)
+        plt.ylabel('Tiêu chí', fontsize=12)
         plt.xlim(0, 100)
 
         # Hiển thị con số % chính xác lên trên từng thanh biểu đồ
@@ -65,37 +62,7 @@ def generate_missing_data_plots(file_path: str, show_plot: bool = True, save_plo
             plt.show()
         else:
             plt.close()
-
-    # --- Biểu đồ 2: Heatmap tương quan khuyết dữ liệu giữa các thuộc tính ---
-    cols_with_missing = df.columns[df.isnull().any()].tolist()
-
-    if cols_with_missing:
-        plt.figure(figsize=(12, 10))
-
-        # Ma trận Boolean (True khi ô bị khuyết/NaN)
-        null_matrix = df[cols_with_missing].isnull()
-
-        # Ma trận tương quan giữa sự khuyết dữ liệu của các cột
-        corr_matrix = null_matrix.corr()
-
-        sns.heatmap(
-            corr_matrix,
-            cmap='coolwarm',
-            annot=False,
-            linewidths=0.5,
-            cbar_kws={'label': 'Hệ số tương quan khuyết (1 = Khuyết cùng nhau)'}
-        )
-
-        plt.title('Ma trận tương quan khuyết dữ liệu (Missingness Correlation)', fontsize=14, fontweight='bold')
-        plt.tight_layout()
-        if save_plot:
-            plt.savefig('missing_data_correlation.png', dpi=300)
-        if show_plot:
-            plt.show()
-        else:
-            plt.close()
-
-# --- Thực thi chương trình ---
+# Thực thi chương trình
 if __name__ == "__main__":
-    file_path = "All_GPUs.csv"
+    file_path = "../All_GPUs.csv"
     generate_missing_data_plots(file_path, show_plot=True, save_plot=True)

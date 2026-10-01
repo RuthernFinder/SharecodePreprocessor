@@ -28,6 +28,6 @@ def check_csv_dtypes(file_path: str):
     print(report_df.to_string(index=False))
 
 if __name__ == "__main__":
-    target_file = "GPU_10_Features.csv"
+    target_file = "GPU_10_Features_Processed_Final.csv"
 
     check_csv_dtypes(target_file)
