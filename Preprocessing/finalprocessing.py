@@ -7,10 +7,6 @@ def audit_and_clean_gpu_dataset(
     output_path: str
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
-    HÀM TÍCH HỢP 2-IN-1: KIỂM TRA LOGIC & XUẤT FILE KẾT QUẢ
-
-    Quy trình xử lý:
-    ----------------
     1. Đọc file nguyên trạng và kiểm kê tỷ lệ giá trị khuyết thiếu (NaN).
     2. Kiểm tra các điều kiện logic cứng (Ràng buộc miền giá trị phần cứng,
        công thức quy đổi MB/GB, danh mục hợp lệ).
@@ -24,7 +20,7 @@ def audit_and_clean_gpu_dataset(
     """
     df = pd.read_csv(input_path)
     original_shape = df.shape
-    # Nhật ký ghi nhận xử lý
+    # Log xử lý
     audit_log = {
         "original_shape": original_shape,
         "missing_summary": None,
@@ -40,7 +36,7 @@ def audit_and_clean_gpu_dataset(
     audit_log["removed_exact_duplicates"] = exact_dup_count
 
     # BƯỚC 4: KIỂM TRA & BỎ CÁC DÒNG VI PHẠM LOGIC CỨNG
-    #Chỉ số phần cứng không được <= 0 (bỏ qua giá trị NaN)
+    # Chỉ số phần cứng không được <= 0 (bỏ qua giá trị NaN)
     hw_cols = [
         'Max_Power_Watts', 'Memory_MB', 'Memory_GB',
         'Memory_Bus_Bit', 'Memory_Bandwidth_GBs', 'Memory_Speed_MHz'
@@ -52,7 +48,6 @@ def audit_and_clean_gpu_dataset(
     mem_mismatch_mask = valid_mem_mask & ((df['Memory_GB'] - (df['Memory_MB'] / 1024.0)).abs() > 1e-4)
 
   # Giá trị danh mục không thuộc tập hợp cho phép
-
       # 1. Khai báo các tập hợp danh mục chuẩn theo ngành phần cứng GPU)
     DOMAIN_VALID_MANUFACTURERS = {
         'NVIDIA', 'AMD', 'INTEL', 'ATI', '3DFX', 'MATROX',
@@ -84,8 +79,7 @@ def audit_and_clean_gpu_dataset(
         df = df[~total_invalid_mask].reset_index(drop=True)
     audit_log["removed_invalid_logic"] = invalid_rows_count
 
-    # --- BƯỚC 5: XỬ LÝ TRÙNG LẶP KHÓA TÊN GPU (DUPLICATE NAMES) ---
-    # Chiến lược bảo tồn: Sắp xếp theo số lượng cột có dữ liệu (non-null count) giảm dần,
+    # BƯỚC 5: XỬ LÝ TRÙNG LẶP KHÓA TÊN GPU
     # giữ lại dòng chứa nhiều thông tin nhất của GPU đó.
     initial_name_dup = df['Name'].duplicated().sum()
     if initial_name_dup > 0:
@@ -98,7 +92,7 @@ def audit_and_clean_gpu_dataset(
         df = df.drop(columns=['__data_density']).reset_index(drop=True)
     audit_log["duplicate_names_handled"] = initial_name_dup
 
-    # --- BƯỚC 6: ĐỊNH DẠNG KIỂU DỮ LIỆU TỐI ƯU CHO PHÂN TÍCH ---
+    # BƯỚC 6: ĐỊNH DẠNG KIỂU DỮ LIỆU TỐI ƯU CHO PHÂN TÍCH
     if 'Release_Year' in df.columns:
         df['Release_Year'] = df['Release_Year'].astype('Int64')
     if 'Release_Month' in df.columns:
@@ -106,18 +100,18 @@ def audit_and_clean_gpu_dataset(
     if 'Is_Notebook' in df.columns:
         df['Is_Notebook'] = df['Is_Notebook'].astype('int64')
 
-    # --- BƯỚC 7: XUẤT FILE CSV CUỐI CÙNG ---
+    # BƯỚC 7: XUẤT FILE CSV CUỐI CÙNG
     df.to_csv(output_path, index=False)
     audit_log["final_shape"] = df.shape
 
-    print("\n2. KẾT QUẢ XỬ LÝ & LÀM SẠCH LOGIC:")
+    print("\n1. KẾT QUẢ XỬ LÝ LOGIC:")
     print(f"   - Dòng trùng lặp 100% bị xóa: {audit_log['removed_exact_duplicates']}")
     print(f"   - Dòng vi phạm logic kỹ thuật/phần cứng bị xóa: {audit_log['removed_invalid_logic']}")
     print(f"   - GPU trùng tên đã được xử lý (Giữ dòng tối ưu nhất): {audit_log['duplicate_names_handled']}")
 
-    print("\n3. TỔNG KẾT ĐẦU RA:")
-    print(f"   - Kích thước tập dữ liệu cuối cùng: {df.shape[0]} dòng, {df.shape[1]} cột")
-    print(f"   - Xuất file thành công tại: {output_path}")
+    print("\n 2. TỔNG KẾT ĐẦU RA:")
+    print(f"- Kích thước tập dữ liệu cuối cùng: {df.shape[0]} dòng, {df.shape[1]} cột")
+    print(f"- Xuất file thành công tại: {output_path}")
 
     return df, audit_log
 
