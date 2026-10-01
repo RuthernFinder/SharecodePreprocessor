@@ -1,14 +1,14 @@
 import pandas as pd
 
 # 1. Đọc file CSV gốc chứa toàn bộ 34 thuộc tính
-input_file = "All_GPUs.csv"
+input_file = "..\\All_GPUs.csv"
 df = pd.read_csv(input_file)
 
 # 2. Danh sách 10 thuộc tính cần giữ lại
 selected_columns = [
     'Name',
     'Manufacturer',
-    'Max_Power',
+    'Process',
     'Memory',
     'Memory_Bus',
     'Memory_Bandwidth',
