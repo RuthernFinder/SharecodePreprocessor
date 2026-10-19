@@ -4,16 +4,84 @@ import pandas as pd
 import scipy.stats as stats
 
 # 1. Đọc dữ liệu từ file CSV
-df = pd.read_csv("GPU_10_Features.csv")
+df = pd.read_csv("GPU_10_Features_Processed_Final.csv")
 
 
-# Hàm trích xuất giá trị số từ chuỗi (VD: "1024 MB" -> 1024.0, "2009" -> 2009.0)
+# Xóa khoảng trắng thừa trong tên cột
+"""df.columns = df.columns.str.strip()"""
+
+# Hàm tự động tìm cột dựa trên danh sách từ khóa linh hoạt
+def find_column(df, keywords):
+  for col in df.columns:
+    col_clean = col.lower().replace(" ", "").replace("_", "")
+    for kw in keywords:
+      if kw in col_clean:
+        return df[col], col
+  return None, None
+
+
+# Hàm trích xuất giá trị số (loại bỏ đơn vị chữ nếu có)
 def extract_numeric(series):
-  return series.astype(str).str.extract(r"(\d+\.?\d*)")[0].astype(float)
+  if series is None:
+    return None
+  if pd.api.types.is_numeric_dtype(series):
+    return series.astype(float)
+  extracted = series.astype(str).str.extract(r"(\d+\.?\d*)")[0]
+  return pd.to_numeric(extracted, errors="coerce")
 
 
-# 2. Tạo hàm vẽ Q-Q Plot kiểm tra Phân phối chuẩn (Chuẩn giao diện ggqqplot)
+# Hàm trích xuất riêng NĂM (4 chữ số)
+def extract_year(series):
+  if series is None:
+    return None
+  date_parsed = pd.to_datetime(series, errors="coerce")
+  years = date_parsed.dt.year
+  if years.isna().all():
+    years = pd.to_numeric(
+        series.astype(str).str.extract(r"(\d{4})")[0], errors="coerce"
+    )
+  return years
+
+
+# Hàm trích xuất riêng THÁNG (1-12)
+def extract_month(series):
+  if series is None:
+    return None
+  date_parsed = pd.to_datetime(series, errors="coerce")
+  months = date_parsed.dt.month
+  if months.isna().all():
+    extracted = series.astype(str).str.extract(r"(\b[1-9]\b|\b1[0-2]\b)")[0]
+    months = pd.to_numeric(extracted, errors="coerce")
+  return months
+
+
+# 2. Định nghĩa từ khóa nhận diện cho từng đặc trưng (Hỗ trợ cả Anh lẫn Việt)
+keyword_mapping = {
+    "Memory_Speed": ["speed", "tocdo", "mhz", "clock"],
+    "Memory_Bandwidth": ["bandwidth", "bangthong", "gb/s", "gb/sec"],
+    "Memory": ["memory", "ram", "bonho", "value", "vram"],
+    "Memory_Bus": ["bus", "bit"],
+    "Process": ["process", "tientrinh", "nm"],
+    "Release_Date": ["release", "date", "ngay", "nhan", "phat-hanh", "year"],
+}
+
+# 3. Trích xuất dữ liệu cho từng đặc trưng
+df_clean = pd.DataFrame()
+
+for feature, keywords in keyword_mapping.items():
+  col_data, col_name = find_column(df, keywords)
+  if col_data is not None:
+    if feature == "Release_Date":
+      df_clean["Release_Year"] = extract_year(col_data)
+      df_clean["Release_Month"] = extract_month(col_data)
+    else:
+      df_clean[feature] = extract_numeric(col_data)
+
+# 4. Hàm vẽ Q-Q Plot kiểm tra Phân phối chuẩn
 def plot_ggqqplot(data_series, ylabel_name, title_name=""):
+  if data_series is None:
+    return
+
   sample = data_series.dropna().values
   n = len(sample)
   if n == 0:
@@ -22,32 +90,31 @@ def plot_ggqqplot(data_series, ylabel_name, title_name=""):
   # Sắp xếp mẫu dữ liệu
   sorted_data = np.sort(sample)
 
-  # Tính phân vị lý thuyết của Phân phối chuẩn chuẩn hóa N(0, 1)
+  # Tính phân vị lý thuyết N(0, 1)
   probs = (np.arange(1, n + 1) - 0.5) / n
   theoretical_quantiles = stats.norm.ppf(probs)
 
-  # Đường tham chiếu đi qua Q1 (25%) và Q3 (75%) theo thuật toán qqline
+  # Đường tham chiếu qua Q1 (25%) và Q3 (75%)
   q25_x, q75_x = stats.norm.ppf([0.25, 0.75])
   q25_y, q75_y = np.percentile(sorted_data, [25, 75])
 
-  slope = (q75_y - q25_y) / (q75_x - q25_x)
+  slope = (q75_y - q25_y) / (q75_x - q25_x) if (q75_x - q25_x) != 0 else 1
   intercept = q25_y - slope * q25_x
   fit_y = intercept + slope * theoretical_quantiles
 
-  # Tính sai số chuẩn (Standard Error) & Giới hạn dải tin cậy 95%
+  # Dải tin cậy 95%
   pdf = stats.norm.pdf(theoretical_quantiles)
-  pdf = np.where(pdf < 1e-6, 1e-6, pdf)  # Tránh lỗi chia cho 0 ở hai đầu biên
-
+  pdf = np.where(pdf < 1e-6, 1e-6, pdf)
   se = (slope / pdf) * np.sqrt(probs * (1 - probs) / n)
-  z_crit = stats.norm.ppf(0.975)  # Mức tin cậy 95%
+  z_crit = stats.norm.ppf(0.975)
 
   lower_bound = fit_y - z_crit * se
   upper_bound = fit_y + z_crit * se
 
-  # Khởi tạo khung biểu đồ
+  # Khởi tạo khung đồ thị
   plt.figure(figsize=(7, 6))
 
-  # 1. Dải tin cậy 95% (Confidence Ribbon màu xám)
+  # Dải tin cậy 95% (Màu xám)
   plt.fill_between(
       theoretical_quantiles,
       lower_bound,
@@ -57,23 +124,19 @@ def plot_ggqqplot(data_series, ylabel_name, title_name=""):
       label="95% CI",
   )
 
-  # 2. Đường tham chiếu phân phối chuẩn
+  # Đường tham chiếu & điểm dữ liệu
   plt.plot(
       theoretical_quantiles, fit_y, color="gray", linestyle="-", linewidth=1.5
   )
-
-  # 3. Các điểm dữ liệu mẫu thực tế
   plt.scatter(
       theoretical_quantiles, sorted_data, color="black", s=10, zorder=3
   )
 
-  # Nhãn và giao diện phẳng tối giản (Minimal Theme)
   plt.xlabel("Theoretical", fontsize=11)
   plt.ylabel(ylabel_name, fontsize=11)
   if title_name:
     plt.title(title_name, fontsize=12)
 
-  # Định dạng đường viền và lưới đồ thị
   ax = plt.gca()
   ax.set_facecolor("white")
   ax.spines["top"].set_visible(False)
@@ -86,52 +149,45 @@ def plot_ggqqplot(data_series, ylabel_name, title_name=""):
   plt.show()
 
 
-# 3. Trích xuất đủ 6 biến định lượng từ file CSV
-df_clean = pd.DataFrame({
-    "Memory_Speed": extract_numeric(df["Memory_Speed"]),
-    "Memory_Bandwidth": extract_numeric(df["Memory_Bandwidth"]),
-    "Memory": extract_numeric(df["Memory"]),
-    "Memory_Bus": extract_numeric(df["Memory_Bus"]),
-    "Process": extract_numeric(df["Process"]),
-    "Release_Date": (
-        df["Release_Date"].astype(str).str.extract(r"(\d{4})")[0].astype(float)
-    ),
-})
-
-# 4. Danh sách cấu hình vẽ cho ĐỦ 6 ĐẶC TRƯNG ĐỊNH LƯỢNG
+# 5. Cấu hình và thực hiện vẽ 7 biểu đồ
 qq_configs = [
     (
-        df_clean["Memory_Speed"],
+        df_clean.get("Memory_Speed"),
         "Memory Speed [MHz]",
         "Biểu đồ QQ-plot của Memory_speed",
     ),
     (
-        df_clean["Memory_Bandwidth"],
+        df_clean.get("Memory_Bandwidth"),
         "Memory Bandwidth [GB/sec]",
         "Biểu đồ QQ-plot của Memory_bandwidth",
     ),
     (
-        df_clean["Memory"],
+        df_clean.get("Memory"),
         "Memory Value [MB]",
         "Biểu đồ QQ-plot của Memory_value",
     ),
     (
-        df_clean["Memory_Bus"],
+        df_clean.get("Memory_Bus"),
         "Memory Bus [Bit]",
         "Biểu đồ QQ-plot của Memory_bus",
     ),
     (
-        df_clean["Process"],
+        df_clean.get("Process"),
         "Process [nm]",
         "Biểu đồ QQ-plot của Process",
     ),
     (
-        df_clean["Release_Date"],
-        "Release Date [Year]",
-        "Biểu đồ QQ-plot của Release_date",
+        df_clean.get("Release_Year"),
+        "Release Year [Year]",
+        "Biểu đồ QQ-plot của Release_year",
+    ),
+    (
+        df_clean.get("Release_Month"),
+        "Release Month [1-12]",
+        "Biểu đồ QQ-plot của Release_month",
     ),
 ]
 
-# Chạy vòng lặp vẽ lần lượt cả 6 biểu đồ
 for data, ylabel, title in qq_configs:
-  plot_ggqqplot(data, ylabel_name=ylabel, title_name=title)
+  if data is not None:
+    plot_ggqqplot(data, ylabel_name=ylabel, title_name=title)
