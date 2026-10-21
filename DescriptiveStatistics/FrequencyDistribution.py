@@ -3,18 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-# ==========================================
-# 1. ĐỌC VÀ TIỀN XỬ LÝ DỮ LIỆU
-# ==========================================
 df = pd.read_csv("GPU_10_Features_Processed_Final.csv")
 
-
-# ==========================================
-# 2. Biểu đồ cột của các biến định lượng
-# ==========================================
-# ------------------------------------------
 # A. Biểu đồ memory speed
-# ------------------------------------------
 def plot_memory_speed_graph(df):
     """Vẽ biểu đồ cột phân bố Memory Speed theo các dải xung nhịp chuẩn."""
     speed_series = df["Memory_Speed_MHz"].dropna()
@@ -69,10 +60,8 @@ def plot_memory_speed_graph(df):
 
     plt.tight_layout()
     plt.show()
-
-# ------------------------------------------
+    
 # B. Biểu đồ memory bandwidth
-# ------------------------------------------
 def plot_bandwidth_graph(df):
     bw_series = df["Memory_Bandwidth_GBs"].dropna()
 
@@ -125,10 +114,7 @@ def plot_bandwidth_graph(df):
     plt.tight_layout()
     plt.show()
 
-
-# ------------------------------------------
 # C. Biểu đồ memory mb
-# ------------------------------------------
 def plot_memory_mb_graph(df):
   """Vẽ biểu đồ cột phân bố Dung lượng bộ nhớ Memory MB theo chuẩn dung lượng RAM."""
   mem_series = df["Memory_MB"].dropna().astype(int)
@@ -184,9 +170,7 @@ def plot_memory_mb_graph(df):
   plt.tight_layout()
   plt.show()
 
-# ------------------------------------------
 # D. Biểu đồ process
-# ------------------------------------------
 def plot_process_nm_graph(df):
   """Vẽ biểu đồ cột phân bố Tiến trình sản xuất Process (nm) theo từng mốc công nghệ."""
   proc_series = df["Process_nm"].dropna().astype(int)
@@ -233,9 +217,7 @@ def plot_process_nm_graph(df):
   plt.tight_layout()
   plt.show()
 
-# ------------------------------------------
 # E. Biểu đồ memory bus
-# ------------------------------------------
 def plot_memory_bus_graph(df):
   bus_series = df["Memory_Bus_Bit"].dropna().astype(int)
 
@@ -297,13 +279,11 @@ def plot_memory_bus_graph(df):
 
   plt.tight_layout()
   plt.show()
+    
 
-
-# ==========================================
-# 3. HÀM VẼ BIỂU ĐỒ CHO CÁC BIẾN PHÂN LOẠI
-# ==========================================
+# F. Biểu đồ các biến phân loại
 def plot_categorical_graphs(df):
-  # A. Hãng sản xuất (Manufacturer)
+  # a. Hãng sản xuất (Manufacturer)
   fig, ax = plt.subplots(figsize=(8, 5))
   mfg_counts = df["Manufacturer"].value_counts()
   bars1 = ax.bar(
@@ -327,7 +307,7 @@ def plot_categorical_graphs(df):
   plt.tight_layout()
   plt.show()
 
-  # B. GPU Desktop vs Laptop (Is_Notebook)
+  # b. GPU Desktop vs Laptop (Is_Notebook)
   fig, ax = plt.subplots(figsize=(7, 5))
   notebook_map = {0: "No (Desktop)", 1: "Yes (Laptop)"}
   notebook_counts = df["Is_Notebook"].map(notebook_map).value_counts()
@@ -352,7 +332,7 @@ def plot_categorical_graphs(df):
   plt.tight_layout()
   plt.show()
 
-  # C. Top Loại bộ nhớ (Memory Type)
+  # c. Top Loại bộ nhớ (Memory Type)
   fig, ax = plt.subplots(figsize=(9, 5))
   dram_counts = df["Memory_Type"].value_counts().head(7)
   bars3 = ax.bar(
@@ -377,7 +357,7 @@ def plot_categorical_graphs(df):
   plt.tight_layout()
   plt.show()
 
-  # D. Phân bố GPU ra mắt theo Tháng (Release Month)
+  # d. Phân bố GPU ra mắt theo Tháng (Release Month)
   fig, ax = plt.subplots(figsize=(10, 5))
   month_counts = (
       df["Release_Month"].dropna().astype(int).value_counts().sort_index()
@@ -405,7 +385,7 @@ def plot_categorical_graphs(df):
   plt.tight_layout()
   plt.show()
 
-# E. Biểu đồ Phân bố GPU theo Năm phát hành (tách biệt do có một số năm có số lượng GPU ra mắt rất ít, nên cần tách riêng để biểu diễn rõ ràng hơn)
+# e. Biểu đồ Phân bố GPU theo Năm phát hành (tách biệt do có một số năm có số lượng GPU ra mắt rất ít, nên cần tách riêng để biểu diễn rõ ràng hơn)
 def plot_release_year_graph(df):
   year_counts = (
       df["Release_Year"].dropna().astype(int).value_counts().sort_index()
@@ -440,11 +420,7 @@ def plot_release_year_graph(df):
   plt.tight_layout()
   plt.show()
 
-
-# ==========================================
-# 4. Vẽ Các Biểu Đồ
-# ==========================================
-
+# F. Vẽ Các Biểu Đồ
 continuous_features = [
     ("Memory_Speed_MHz", "Memory Speed [MHz]"),
 ]
