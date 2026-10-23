@@ -60,7 +60,7 @@ def plot_memory_speed_graph(df):
 
     plt.tight_layout()
     plt.show()
-    
+
 # B. Biểu đồ memory bandwidth
 def plot_bandwidth_graph(df):
     bw_series = df["Memory_Bandwidth_GBs"].dropna()
@@ -279,7 +279,7 @@ def plot_memory_bus_graph(df):
 
   plt.tight_layout()
   plt.show()
-    
+
 
 # F. Biểu đồ các biến phân loại
 def plot_categorical_graphs(df):
@@ -443,12 +443,3 @@ if "Memory_Bandwidth_GBs" in df.columns:
 
 if "Memory_Speed_MHz" in df.columns:
   plot_memory_speed_graph(df)
-
-
-
-
-
-
-
-
-  

@@ -31,11 +31,11 @@ ax.set_xticklabels(
 ax.set_yticklabels(num_cols, fontsize=9)
 
 plt.title(
-    "Ma trận tương quan giữa các đặc trưng", 
-    fontsize=12, 
+    "Ma trận tương quan giữa các đặc trưng",
+    fontsize=12,
     weight="bold",
-    x=0.45,       
-    ha="center", 
+    x=0.45,
+    ha="center",
     pad=25
 )
 
@@ -57,10 +57,7 @@ for i in range(len(num_cols)):
 
 plt.tight_layout()
 plt.show()
-
-# ==========================================
 # BIỂU ĐỒ 2: Scatter plot (Release Year vs Process nm)
-# ==========================================
 plt.figure(figsize=(8, 5))
 plt.scatter(
     df["Release_Year"],
@@ -81,11 +78,9 @@ plt.ylabel("Process (nm)", fontsize=10)
 plt.grid(True, linestyle="--", alpha=0.5)
 
 plt.tight_layout()
-plt.show() 
+plt.show()
 
-# ==========================================
 # BIỂU ĐỒ 3: Scatter plot (Memory MB vs Bandwidth)
-# ==========================================
 plt.figure(figsize=(8, 5))
 plt.scatter(
     df["Memory_MB"],
@@ -106,11 +101,10 @@ plt.ylabel("Bandwidth (GB/s)", fontsize=10)
 plt.grid(True, linestyle="--", alpha=0.5)
 
 plt.tight_layout()
-plt.show()  
+plt.show()
 
-# ==========================================
 # BIỂU ĐỒ 4: Boxplot so sánh Băng thông theo Hãng
-# ==========================================
+
 plt.figure(figsize=(8, 5))
 mfg_names = df["Manufacturer"].dropna().unique()
 mfg_data = [
