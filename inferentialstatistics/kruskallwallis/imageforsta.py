@@ -61,7 +61,7 @@ def style_axes(ax, ygrid=True):
     ax.tick_params(length=0)
 
 
-# ----------------------------------------------------------------- tinh toan
+# tinh toan
 df = pd.read_csv(CSV)
 df = df[df[GROUP].isin(GROUPS)].dropna(subset=[VALUE]).copy()
 N = len(df)
@@ -143,7 +143,7 @@ fig.tight_layout()
 fig.savefig(f"{OUT}/hinh1_hang_trung_binh.png", dpi=300)
 plt.close(fig)
 
-# ----------------------------------------------------------------- Hinh 2 (boxplot)
+#  Hinh 2 (boxplot)
 fig, ax = plt.subplots(figsize=(9, 5.6))
 data = [df.loc[df[GROUP] == g, VALUE].values for g in GROUPS]
 bp = ax.boxplot(data, positions=x, widths=0.5, patch_artist=True, showfliers=True,

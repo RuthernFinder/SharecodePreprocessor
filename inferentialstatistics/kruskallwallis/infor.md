@@ -12,3 +12,9 @@
 # Duntest và bonferni
 lấy bonferni( alpha) mặc định là 5% 
 xét 10 cặp theo thứu tự và tính các hạng trung bình, P của nó (với Ho của từng cặp là như nhau và được đánh dấu trên bảng)
+
+---------------------------
+# # Lưu ý về một số file
+imageforsta.py là file dùng để tạo ảnh trực quan về số liệu trước xử lý
+ppnc.py dùng để phân 5 nhóm và các tính toán sơ bộ các thành phần băng thông để củng cố cho kiểm định buộc phải là phi tham số
+kruskall.py là file chính để tính toán toàn bộ và exposure in report
