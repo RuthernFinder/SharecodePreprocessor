@@ -122,13 +122,13 @@ def plot_memory_mb_graph(df):
   def categorize_mem(mem):
     if mem <= 512:
       return "≤ 512 MB"
-    elif mem == 1024:
+    elif mem <= 1024:
       return "1 GB (1024MB)"
-    elif mem == 2048:
+    elif mem <= 2048:
       return "2 GB (2048MB)"
-    elif mem == 3072 or mem == 4096:
+    elif mem <= 4096:
       return "3-4 GB"
-    elif 4096 < mem <= 8192:
+    elif mem <= 8192:
       return "5-8 GB"
     else:
       return "> 8 GB"
